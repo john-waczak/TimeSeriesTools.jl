@@ -9,17 +9,17 @@ abstract type AbstractGenericTimeSeries <: AbstractTimeSeries end
 abstract type AbstractRegularTimeSeries <: AbstractTimeSeries end
 
 
-struct GenericTimeSeries{T<:Real, UZ<:Unitful.Units, UT<:Unitful.Units} <: AbstractGenericTimeSeries
+struct GenericTimeSeries{T<:Real, T2, UZ<:Unitful.Units, UT<:Unitful.Units} <: AbstractGenericTimeSeries
     z::Vector{T}
-    t::Vector{T}
+    t::T2
     z_units::UZ
     t_units::UT
     start_time::ZonedDateTime
 end
 
-struct UncertainGenericTimeSeries{T<:Real, UZ<:Unitful.Units, UT<:Unitful.Units} <: AbstractGenericTimeSeries
+struct UncertainGenericTimeSeries{T<:Real, T2, UZ<:Unitful.Units, UT<:Unitful.Units} <: AbstractGenericTimeSeries
     z::Vector{T}
-    t::Vector{T}
+    t::T2
     z_units::UZ
     t_units::UT
     start_time::ZonedDateTime
@@ -49,7 +49,7 @@ end
 """
     times(series::AbstractGenericTimeSeries)
 
-Given a timeseries `series` return a vector of times 
+Given a timeseries `series` return a vector of times
 """
 function times(series::AbstractGenericTimeSeries)
     return series.t

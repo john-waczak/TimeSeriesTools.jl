@@ -8,5 +8,6 @@ include("variograms.jl")
 
 export GenericTimeSeries, UncertainGenericTimeSeries, RegularTimeSeries, UncertainRegularTimeSeries
 export times
+export semivariogram, SphericalVariogram
 
 end
