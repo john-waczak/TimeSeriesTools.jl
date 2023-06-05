@@ -2,6 +2,7 @@ using Statistics
 using StatsBase
 using LinearAlgebra
 using Optim
+using ParameterHandling
 
 # relevant links
 # https://www.geo.fu-berlin.de/en/v/soga/Geodata-analysis/geostatistics/Geostatistical-Interpolation/Estimation-of-the-Semivariogram/index.html
@@ -29,9 +30,18 @@ function semivariogram(Z::TimeSeriesTools.AbstractRegularTimeSeries; lag_ratio=0
 end
 
 
+
+
+
+
+
+
+
+
+
 abstract type ModelVariogram end
 
-struct SphericalVariogram{T<:Real} <: ModelVariogram
+struct SphericalVariogram{T} <: ModelVariogram
     b::T  # nugget
     C₀::T  # sill
     r::T  # range
@@ -47,7 +57,34 @@ end
 
 nugget(γ::SphericalVariogram) = γ.b
 sill(γ::SphericalVariogram) = γ.C₀
-range(γ::SphericalVariogram) = γ.r
+γ_range(γ::SphericalVariogram) = γ.r
+
+
+
+
+
+function fit_spherical_γ(h, γ, params; optargs...)
+    θ₀, unflatten = ParameterHandling.value_flatten(params)
+
+    function loss(θ)
+        ps = unflatten(θ)
+        γ̂ = SphericalVariogram(ps.nugget, ps.sill, ps.range).(h)
+        return sqrt(mean((γ .- γ̂).^2))
+    end
+
+    opt = optimize(loss, θ₀; optargs...)
+
+    ps_fitted = unflatten(opt.minimizer)
+
+    return SphericalVariogram(ps_fitted.nugget, ps_fitted.sill, ps_fitted.range)
+end
+
+
+
+
+
+
+
 
 # this one will be much harder!
 # function semivariogram(Z::AbstractGenericTimeSeries; min_window_points=10)

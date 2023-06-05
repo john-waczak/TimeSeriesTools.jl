@@ -7,8 +7,8 @@ using Plots
 using CSV, DataFrames
 using Unitful
 using Dates, TimeZones
-using Optim
 
+using Optim, ParameterHandling
 
 Base.length(Z::TimeSeriesTools.AbstractTimeSeries) = length(Z.z)
 
@@ -70,22 +70,14 @@ scatter!(
 savefig("./demo_γ.png")
 
 
-θ₀ = [0.5, 100.0, 100.0]
-#γ_spherical = SphericalVariogram(θ₀...)
+# set up initial parameters
+γ_params = (
+    nugget=positive(1.5),
+    sill=positive(100.0),
+    range=positive(100.0)
+)
 
-
-function loss(θ)
-    γ̂ = SphericalVariogram(log.(θ)...).(h)
-    return sqrt(mean((γ .- γ̂).^2))
-end
-
-loss(θ₀)
-
-
-#opt = optimize(θ->loss(θ, h, γ), [4.0, 0.1, 0.0001], LBFGS(); autodiff=:forward)
-opt = optimize(θ->loss(θ, h, γ), θ₀, GradientDescent(); autodiff=:forward)
-opt = optimize(θ->loss(θ, h, γ), θ₀, LBFG(); autodiff=:forward)
-opt.minimizer
+γ_fit = fit_spherical_γ(h, γ, γ_params; show_trace=true)
 
 scatter(
     h ./ 60.0,
@@ -100,7 +92,6 @@ scatter(
 )
 
 
-γ_fit = SphericalVariogram(opt.minimizer...)
 h_fit = 0.0:1.0:h[end]
 γ_out = γ_fit.(h_fit)
 plot!(
@@ -111,7 +102,7 @@ plot!(
 )
 
 scatter!([0], [nugget(γ_fit)], label="nugget", color=:grey)
-vline!([range(γ_fit)./60.0], ls=:dash, color=:grey, label="range")
+vline!([γ_range(γ_fit)./60.0], ls=:dash, color=:grey, label="range")
 hline!([sill(γ_fit)], ls=:dash, color=:brown, label="sill")
 
 savefig("./demo_γ--with_fit.png")

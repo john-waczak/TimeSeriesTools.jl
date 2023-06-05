@@ -9,5 +9,7 @@ include("variograms.jl")
 export GenericTimeSeries, UncertainGenericTimeSeries, RegularTimeSeries, UncertainRegularTimeSeries
 export times
 export semivariogram, SphericalVariogram
+export nugget, sill, γ_range
+export fit_spherical_γ
 
 end
