@@ -19,6 +19,8 @@ function semivariogram(Z::TimeSeriesTools.AbstractRegularTimeSeries; lag_ratio=0
     # NOTE: for now, LoopVectorization.jl only supports rectangular loop indices... may be able to achieve additional
     # speedups once triangular looping is in place
 
+
+    # add a flag to choose whether or not to use multithreading
     Threads.@threads for i ∈ 1:Nlags
         @inbounds for j ∈ (i+1):Npoints
             γ[i] += (Z.z[j] - Z.z[j-i])^2
@@ -28,13 +30,6 @@ function semivariogram(Z::TimeSeriesTools.AbstractRegularTimeSeries; lag_ratio=0
 
     return γ, h
 end
-
-
-
-
-
-
-
 
 
 
@@ -54,6 +49,7 @@ function (γ::SphericalVariogram)(h)
         return γ.b + γ.C₀
     end
 end
+
 
 nugget(γ::SphericalVariogram) = γ.b
 sill(γ::SphericalVariogram) = γ.C₀

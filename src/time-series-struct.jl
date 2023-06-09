@@ -70,5 +70,5 @@ end
 # create overloads for regular time series that will construct "t" array on-the-fly
 
 
-test_unit = u"kg"
-typeof(test_unit) <: Unitful.Units
+# test_unit = u"kg"
+# typeof(test_unit) <: Unitful.Units

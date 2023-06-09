@@ -10,11 +10,13 @@ using Dates, TimeZones
 
 using Optim, ParameterHandling
 
+
 Base.length(Z::TimeSeriesTools.AbstractTimeSeries) = length(Z.z)
 
 
 
-df_test = CSV.File(download("https://ncsa.osn.xsede.org/ees230012-bucket01/AirQualityNetwork/data/central-node-8/2023/05/02/MINTS_001e06323a37_IPS7100_2023_05_02.csv")) |> DataFrame
+df_test = CSV.File(download("https://ncsa.osn.xsede.org/ees230012-bucket01/AirQualityNetwork/data/raw/Central_Hub_1/2023/03/04/MINTS_001e06318c91_IPS7100_2023_03_04.csv")) |> DataFrame
+
 
 Z = RegularTimeSeries(
     df_test.pm2_5,
@@ -72,12 +74,14 @@ savefig("./demo_γ.png")
 
 # set up initial parameters
 γ_params = (
-    nugget=positive(1.5),
-    sill=positive(100.0),
+    nugget=positive(0.01),
+    sill=positive(0.1),
     range=positive(100.0)
 )
 
 γ_fit = fit_spherical_γ(h, γ, γ_params; show_trace=true)
+
+println(γ_fit)
 
 scatter(
     h ./ 60.0,
@@ -103,7 +107,12 @@ plot!(
 
 scatter!([0], [nugget(γ_fit)], label="nugget", color=:grey)
 vline!([γ_range(γ_fit)./60.0], ls=:dash, color=:grey, label="range")
-hline!([sill(γ_fit)], ls=:dash, color=:brown, label="sill")
+hline!([sill(γ_fit) + nugget(γ_fit)], ls=:dash, color=:brown, label="sill")
+
+
+println(sqrt(nugget(γ_fit)))
+
+mean(Z.z)
 
 savefig("./demo_γ--with_fit.png")
 savefig("./demo_γ--with_fit.pdf")
