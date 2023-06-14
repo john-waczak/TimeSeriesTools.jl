@@ -40,6 +40,10 @@ df_test = nothing
 GC.gc()
 
 
+
+
+
+
 # NOTE: loopvectorization currently doesn't work. Could update in the future when they enable triangular / unstructured
 # indices on nested loops.
 
@@ -125,23 +129,6 @@ savefig("./demo_γ--with_fit.pdf")
 
 
 # Let's come up with code for generating a Hankel matrix from a time series Z.
-typeof(Z)
-
-function TimeDelayEmbedding(Z::AbstractRegularTimeSeries; nrow=100)
-    # pre-allocate resulting matrix H
-    H = zeros(nrow, length(Z)-nrow)
-
-    # fill up H with our data
-    ncol = length(Z) - nrow
-    for k∈1:ncol
-        H[:, k] = Z.z[k:end-ncol+k-1]
-    end
-
-    # here we think of rows of H as our time series (shifted).
-    return H
-end
-
-
 H = TimeDelayEmbedding(Z)
 
 U, σ, V = svd(H)

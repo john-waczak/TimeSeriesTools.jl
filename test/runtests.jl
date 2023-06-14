@@ -81,6 +81,25 @@ end
 
 
 
+@testset "embeddings.jl" begin
+    out = [
+        1 2 3
+        2 3 4
+        3 4 5
+    ]
+
+    out2 = [
+        3 4 5
+        2 3 4
+        1 2 3
+    ]
+
+    @test all(TimeDelayEmbedding(1:5, nrow=3) .== out)
+    @test all(TimeDelayEmbedding(1:5, nrow=3, method=:Backward) .== out2)
+
+end
+
+
 
 # @testset "TimeSeriesTools.jl" begin
 #     # Write your tests here.
