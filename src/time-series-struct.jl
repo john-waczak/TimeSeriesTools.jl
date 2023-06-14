@@ -26,6 +26,29 @@ struct UncertainGenericTimeSeries{T<:Real, T2, UZ<:Unitful.Units, UT<:Unitful.Un
     Δz::Vector{T}
 end
 
+
+struct DoublyUncertainGenericTimeSeries{T<:Real, T2, UZ<:Unitful.Units, UT<:Unitful.Units} <: AbstractGenericTimeSeries
+    z::Vector{T}
+    t::T2
+    z_units::UZ
+    t_units::UT
+    start_time::ZonedDateTime
+    Δz_repr::Vector{T}  # representativeness uncertainty
+    Δz_var::Vector{T}   # "variance" uncertainty i.e. from the variogram
+end
+
+struct TriplyUncertainGenericTimeSeries{T<:Real, T2, UZ<:Unitful.Units, UT<:Unitful.Units} <: AbstractGenericTimeSeries
+    z::Vector{T}
+    t::T2
+    z_units::UZ
+    t_units::UT
+    start_time::ZonedDateTime
+    Δz_inst::Vector{T}  # instrument uncertainty
+    Δz_repr::Vector{T}  # representativeness uncertainty
+    Δz_var::Vector{T}   # "variance" uncertainty i.e. from the variogram
+end
+
+
 struct RegularTimeSeries{T<:Real, UZ<:Unitful.Units, UT<:Unitful.Units} <: AbstractRegularTimeSeries
     z::Vector{T}
     Δt::T
@@ -41,6 +64,28 @@ struct UncertainRegularTimeSeries{T<:Real, UZ<:Unitful.Units, UT<:Unitful.Units}
     t_units::UT
     start_time::ZonedDateTime
     Δz::Vector{T}
+end
+
+struct DoublyUncertainRegularTimeSeries{T<:Real, UZ<:Unitful.Units, UT<:Unitful.Units} <: AbstractRegularTimeSeries
+    z::Vector{T}
+    Δt::T
+    z_units::UZ
+    t_units::UT
+    start_time::ZonedDateTime
+    Δz_inst::Vector{T}  # instrument uncertainty
+    Δz_repr::Vector{T}  # representativeness uncertainty
+    Δz_var::Vector{T}   # "variance" uncertainty i.e. from the variogram
+end
+
+struct TriplyUncertainRegularTimeSeries{T<:Real, UZ<:Unitful.Units, UT<:Unitful.Units} <: AbstractRegularTimeSeries
+    z::Vector{T}
+    Δt::T
+    z_units::UZ
+    t_units::UT
+    start_time::ZonedDateTime
+    Δz_inst::Vector{T}  # instrument uncertainty
+    Δz_repr::Vector{T}  # representativeness uncertainty
+    Δz_var::Vector{T}   # "variance" uncertainty i.e. from the variogram
 end
 
 
@@ -61,14 +106,4 @@ function times(series::AbstractRegularTimeSeries)
 end
 
 
-
-# have 2 constructors for handling units, 1 where we pass a unitful string and the second where
-# where we pass a regular string and convert to unit representation.
-
-# if no timezone provided, assume UTC
-
-# create overloads for regular time series that will construct "t" array on-the-fly
-
-
-# test_unit = u"kg"
-# typeof(test_unit) <: Unitful.Units
+# create function to convert an UncertainTimeSeries into a MultiplyUncertainTimeSeries be using a sliding window to evaluate the representativeness and variogram uncertainties
