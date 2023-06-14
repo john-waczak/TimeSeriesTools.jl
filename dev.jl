@@ -116,3 +116,133 @@ mean(Z.z)
 
 savefig("./demo_γ--with_fit.png")
 savefig("./demo_γ--with_fit.pdf")
+
+
+
+# --------------------
+#    HAVOK
+# --------------------
+
+
+# Let's come up with code for generating a Hankel matrix from a time series Z.
+typeof(Z)
+
+function TimeDelayEmbedding(Z::AbstractRegularTimeSeries; nrow=100)
+    # pre-allocate resulting matrix H
+    H = zeros(nrow, length(Z)-nrow)
+
+    # fill up H with our data
+    ncol = length(Z) - nrow
+    for k∈1:ncol
+        H[:, k] = Z.z[k:end-ncol+k-1]
+    end
+
+    # here we think of rows of H as our time series (shifted).
+    return H
+end
+
+
+H = TimeDelayEmbedding(Z)
+
+U, σ, V = svd(H)
+
+
+# visualize the time-delay embedding
+size(V)
+scatter(V[:,1], V[:,1], V[:,3], xlabel="v₁", ylabel="v₂", zlabel="v₃",
+        ms=2,
+        msw=0,
+        msa=0,
+        marker_z = collect(1:size(V,1)) ./ (60.0)^2,
+        colormap=:viridis,
+        colorbar_title=" \n\ntime [hours]",
+        margins=5*Plots.mm,
+        label="",
+        )
+
+
+σ  # first value is *most important*
+
+size(U)
+size(σ)
+size(V)
+all(H .≈ U*Diagonal(σ)*V')
+
+
+plot(σ./sum(σ), xlabel="index, i", ylabel="normalized singular value σᵢ/(Σᵢσᵢ)")
+
+function r_cutoff(σ; ratio=0.01, rmax=15)
+    return min(sum(σ ./ sum(σ) .> ratio) + 1, rmax)
+end
+
+r = r_cutoff(σ)
+
+# truncate the matrices
+Vr = @view V[:,1:r]
+Ur = @view U[:,1:r]
+σr = @view σ[1:r]
+
+
+# compute derivatives of V matrix via fourth order central difference, ignoring last column
+dt = Z.Δt
+size(Vr)
+
+dVr = zeros(size(Vr,1)-5, r-1)
+for k ∈ 1:r-1, i ∈ 3:size(Vr,1)-3
+    dVr[i-2,k] = (1/(12*dt)) * (-Vr[i+2, k] + 8*Vr[i+1, k] - 8*Vr[i-1,k] + Vr[i-2,k])
+end
+
+@assert size(dVr,2) == r-1
+
+
+# chop off edges to size of data matches size of derivative
+X = @view Vr[3:end-3, :]
+dX = @view dVr[:,:]
+
+@assert size(X,2) == size(dX,2)  + 1
+
+
+# thinking of data as rows:
+# now we solve regression problem given by dX = XΞ (where Ξ is composed of our A and B matrixs)
+# solve via ordinary least squares (i.e. via normal equations)
+
+Ξ = (X\dX)'  # now Ξx = dx for a single column vector view
+
+A = Ξ[:, 1:end-1]   # State matrix A
+B = Ξ[:, end]'      # Control matrix B
+
+heatmap(A, yflip=true)
+
+eigenvecs, eigenvals = eigen(A)  # these are the modes
+
+plot(Vr[:,end].^2)
+
+size(Ξ)
+size(X)
+
+plot(times(Z), Z.z)
+plot!(twinx(), times(Z)[1:size(Vr,1), Vr[:,r]])
+size(Vr, 1)
+
+length(Z)-size(Vr,1)
+
+
+# new that we have A and B, our model should be predictive
+# starting with some initial value for v, and the control values
+# we can step forward in time:
+v₀ = Vr[1,1:r-1]
+U = Vr[:,r]
+
+
+
+
+Vr_out = 
+v_next = A*v₀ + B' .* U[1]
+
+
+p1 = plot(Vr[:,1], ylabel="v₁", label="")
+p2 = plot(Vr[:,r], ylabel="vᵣ", label="")
+
+p3 = plot(p1, p2, layout=(2,1))
+
+

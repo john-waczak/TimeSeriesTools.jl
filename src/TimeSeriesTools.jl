@@ -12,7 +12,9 @@ include("variograms.jl")
 #include("forecasting.jl")  # <-- arima/sarima/etc...
 
 # time-series-struct.jl
-export GenericTimeSeries, UncertainGenericTimeSeries, RegularTimeSeries, UncertainRegularTimeSeries
+export AbstractGenericTimeSeries, AbstractRegularTimeSeries, GenericTimeSeries, RegularTimeSeries
+export UncertainGenericTimeSeries, DoublyUncertainGenericTimeSeries, TriplyUncertainGenericTimeSeries
+export UncertainRegularTimeSeries, DoublyUncertainRegularTImeSeries, TriplyUncertainRegularTimeSeries
 export times
 
 # variograms.jl

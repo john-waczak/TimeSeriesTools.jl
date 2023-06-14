@@ -67,6 +67,8 @@ Z = RegularTimeSeries(
     @test all(times(rts) .== ts)
     @test all(times(urts) .== ts)
 
+    @test length(gts) == length(zs)
+
 end
 
 

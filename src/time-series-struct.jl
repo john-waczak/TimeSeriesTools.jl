@@ -106,4 +106,7 @@ function times(series::AbstractRegularTimeSeries)
 end
 
 
+Base.length(Z::TimeSeriesTools.AbstractTimeSeries) = length(Z.z)
+
+
 # create function to convert an UncertainTimeSeries into a MultiplyUncertainTimeSeries be using a sliding window to evaluate the representativeness and variogram uncertainties
