@@ -9,8 +9,29 @@ using ParameterHandling
 # https://www.geo.fu-berlin.de/en/v/soga/Geodata-analysis/geostatistics/Geostatistical-Interpolation/Modeling-the-Semivariogram/index.html
 
 
+
+"""
+    semivariogram(Z::TimeSeriesTools.AbstractRegularTimeSeries; lag_ratio=0.5, lag_max=100.0)
+
+Provided a regular time series `Z`, compute the empirical [semivariogram](https://en.wikipedia.org/wiki/Variogram) γ for time lags ranging from the minimum time step Δt to a maximum value. The maximum time lag is taken to be the smaller of `lag_ratio` times the full duration of the time series and `lag_max`, a user defined maximum lag time in the time units of `Z`.
+
+## Output
+
+Returns a tuple  `(γ, h)` containing the (scaled) variances and time lags.
+"""
 function semivariogram(Z::TimeSeriesTools.AbstractRegularTimeSeries; lag_ratio=0.5, lag_max=100.0)
+    # sanity check for supplied arguments
+    if lag_ratio ≤ 0 || 1 ≤ lag_ratio
+        throw(DomainError(lag_ratio, "argument ∉ (0,1)"))
+    end
+
+    if lag_max ≤ 0
+        throw(DomainError(lag_max, "argument must be positive"))
+    end
+
+
     Nlags = min(round(Int, lag_ratio*length(Z)*Z.Δt), round(Int, lag_max/Z.Δt))
+
     Npoints = length(Z)
 
     h = Z.Δt:Z.Δt:(Z.Δt * Nlags)
@@ -56,9 +77,11 @@ sill(γ::SphericalVariogram) = γ.C₀
 γ_range(γ::SphericalVariogram) = γ.r
 
 
+"""
+    fit_spherical_γ(h, γ, params; optargs...)
 
-
-
+Given an empirical semi-variogram γ with lags h, fit a spherical variogram model to the data with parameters `params`. The arguments `optargs` are passed to the `optimize` function.
+"""
 function fit_spherical_γ(h, γ, params; optargs...)
     θ₀, unflatten = ParameterHandling.value_flatten(params)
 

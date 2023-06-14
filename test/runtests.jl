@@ -14,6 +14,14 @@ t_units = u"s"  # seconds
 t_start = ZonedDateTime(2023, 6, 3, 12, 0, 0, tz"UTC")
 Δzs = 0.1 .* zs
 
+Z = RegularTimeSeries(
+    zs,
+    Δt,
+    z_units,
+    t_units,
+    t_start
+)
+
 
 
 @testset "time-series-struct.jl" begin
@@ -59,10 +67,16 @@ t_start = ZonedDateTime(2023, 6, 3, 12, 0, 0, tz"UTC")
     @test all(times(rts) .== ts)
     @test all(times(urts) .== ts)
 
-
-
-
 end
+
+
+@testset "variograms.jl" begin
+
+    # check that supplied arguments are reasonable
+    @test_throws DomainError semivariogram(Z, lag_ratio=-1.0)
+    @test_throws DomainError semivariogram(Z, lag_max=-1.0)
+end
+
 
 
 
