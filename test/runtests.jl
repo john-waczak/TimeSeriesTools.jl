@@ -95,7 +95,7 @@ end
     ]
 
     @test all(TimeDelayEmbedding(1:5, nrow=3) .== out)
-    @test all(TimeDelayEmbedding(1:5, nrow=3, method=:Backward) .== out2)
+    @test all(TimeDelayEmbedding(1:5, nrow=3, method=:backward) .== out2)
 
 end
 

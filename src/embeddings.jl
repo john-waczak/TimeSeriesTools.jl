@@ -5,13 +5,13 @@
 
 NOTE: The resulting matrix treats each column in the returned matrix `H` as an embedded featured vector.
 """
-function TimeDelayEmbedding(Z::AbstractVector; nrow=100, method=:Forward)
+function TimeDelayEmbedding(Z::AbstractVector; nrow=100, method=:forward)
     if nrow ≥ length(Z)
         throw(DomainError(nrow, "nrow must be less than the full length of Z"))
     end
 
-    if method ∉ [:Forward, :Backward]
-        throw(ArgumentError("method must be one of :Forward or :Backwards"))
+    if method ∉ [:forward, :backward]
+        throw(ArgumentError("method must be one of `:forward` or `:backward`"))
     end
 
     ncol = length(Z) - nrow + 1
@@ -23,7 +23,7 @@ function TimeDelayEmbedding(Z::AbstractVector; nrow=100, method=:Forward)
         H[:, k] = Z[k:k+nrow-1]
     end
 
-    if method == :Backward
+    if method == :backward
         H .= H[end:-1:1, :]
     end
 
