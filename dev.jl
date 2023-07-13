@@ -3,16 +3,22 @@ using Statistics
 using StatsBase
 using LinearAlgebra
 using BenchmarkTools
-using Plots
+
+using CairoMakie
 using CSV, DataFrames
+
 using Unitful
 using Dates, TimeZones
 
 using Optim, ParameterHandling
+using LeastSquaresOptim
 
 
-Base.length(Z::TimeSeriesTools.AbstractTimeSeries) = length(Z.z)
 
+# include plotting recipe
+include("makie-themes.jl")
+
+set_theme!(mints_theme)
 
 
 df_test = CSV.File(download("https://ncsa.osn.xsede.org/ees230012-bucket01/AirQualityNetwork/data/raw/Central_Hub_1/2023/03/04/MINTS_001e06318c91_IPS7100_2023_03_04.csv")) |> DataFrame
@@ -52,6 +58,11 @@ GC.gc()
 
 γ, h = semivariogram(Z; lag_max=20*60)
 γ2, h2 = semivariogram(Z2; lag_max=20*60)
+
+
+
+
+
 
 scatter(
     h ./ 60.0,

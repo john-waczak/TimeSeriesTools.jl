@@ -17,38 +17,6 @@ struct GenericTimeSeries{T<:Real, T2, UZ<:Unitful.Units, UT<:Unitful.Units} <: A
     start_time::ZonedDateTime
 end
 
-struct UncertainGenericTimeSeries{T<:Real, T2, UZ<:Unitful.Units, UT<:Unitful.Units} <: AbstractGenericTimeSeries
-    z::Vector{T}
-    t::T2
-    z_units::UZ
-    t_units::UT
-    start_time::ZonedDateTime
-    Δz::Vector{T}
-end
-
-
-struct DoublyUncertainGenericTimeSeries{T<:Real, T2, UZ<:Unitful.Units, UT<:Unitful.Units} <: AbstractGenericTimeSeries
-    z::Vector{T}
-    t::T2
-    z_units::UZ
-    t_units::UT
-    start_time::ZonedDateTime
-    Δz_repr::Vector{T}  # representativeness uncertainty
-    Δz_var::Vector{T}   # "variance" uncertainty i.e. from the variogram
-end
-
-struct TriplyUncertainGenericTimeSeries{T<:Real, T2, UZ<:Unitful.Units, UT<:Unitful.Units} <: AbstractGenericTimeSeries
-    z::Vector{T}
-    t::T2
-    z_units::UZ
-    t_units::UT
-    start_time::ZonedDateTime
-    Δz_inst::Vector{T}  # instrument uncertainty
-    Δz_repr::Vector{T}  # representativeness uncertainty
-    Δz_var::Vector{T}   # "variance" uncertainty i.e. from the variogram
-end
-
-
 struct RegularTimeSeries{T<:Real, UZ<:Unitful.Units, UT<:Unitful.Units} <: AbstractRegularTimeSeries
     z::Vector{T}
     Δt::T
@@ -56,39 +24,6 @@ struct RegularTimeSeries{T<:Real, UZ<:Unitful.Units, UT<:Unitful.Units} <: Abstr
     t_units::UT
     start_time::ZonedDateTime
 end
-
-struct UncertainRegularTimeSeries{T<:Real, UZ<:Unitful.Units, UT<:Unitful.Units} <: AbstractRegularTimeSeries
-    z::Vector{T}
-    Δt::T
-    z_units::UZ
-    t_units::UT
-    start_time::ZonedDateTime
-    Δz::Vector{T}
-end
-
-struct DoublyUncertainRegularTimeSeries{T<:Real, UZ<:Unitful.Units, UT<:Unitful.Units} <: AbstractRegularTimeSeries
-    z::Vector{T}
-    Δt::T
-    z_units::UZ
-    t_units::UT
-    start_time::ZonedDateTime
-    Δz_inst::Vector{T}  # instrument uncertainty
-    Δz_repr::Vector{T}  # representativeness uncertainty
-    Δz_var::Vector{T}   # "variance" uncertainty i.e. from the variogram
-end
-
-struct TriplyUncertainRegularTimeSeries{T<:Real, UZ<:Unitful.Units, UT<:Unitful.Units} <: AbstractRegularTimeSeries
-    z::Vector{T}
-    Δt::T
-    z_units::UZ
-    t_units::UT
-    start_time::ZonedDateTime
-    Δz_inst::Vector{T}  # instrument uncertainty
-    Δz_repr::Vector{T}  # representativeness uncertainty
-    Δz_var::Vector{T}   # "variance" uncertainty i.e. from the variogram
-end
-
-
 
 
 """

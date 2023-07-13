@@ -33,16 +33,6 @@ Z = RegularTimeSeries(
         t_start
     )
 
-    ugts = UncertainGenericTimeSeries(
-        zs,
-        ts,
-        z_units,
-        t_units,
-        t_start,
-        Δzs
-    )
-
-
     rts = RegularTimeSeries(
         zs,
         Δt,
@@ -51,23 +41,11 @@ Z = RegularTimeSeries(
         t_start
     )
 
-    urts = UncertainRegularTimeSeries(
-        zs,
-        Δt,
-        z_units,
-        t_units,
-        t_start,
-        Δzs
-    )
-
-
     # test that the times function works
     @test all(times(gts) .== ts)
-    @test all(times(ugts) .== ts)
     @test all(times(rts) .== ts)
-    @test all(times(urts) .== ts)
 
-    @test length(gts) == length(zs)
+    @test length(gts) == length(rts)
 
 end
 
