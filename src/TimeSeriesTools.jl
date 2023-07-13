@@ -19,7 +19,7 @@ export times
 
 # variograms.jl
 export semivariogram, get_reasonable_params
-export SphericalVariogram, ExponentialVariogram
+export SphericalVariogram, ExponentialVariogram, GaussianVariogram, CircularVariogram, CubicVariogram, LinearVariogram, PentasphericalVariogram, SineHoleVariogram
 export nugget, partialsill, sill, γ_range
 export fit_spherical_γ, fit_γ
 
