@@ -18,9 +18,10 @@ export UncertainRegularTimeSeries, DoublyUncertainRegularTImeSeries, TriplyUncer
 export times
 
 # variograms.jl
-export semivariogram, SphericalVariogram
-export nugget, sill, γ_range
-export fit_spherical_γ
+export semivariogram, get_reasonable_params
+export SphericalVariogram, ExponentialVariogram
+export nugget, partialsill, sill, γ_range
+export fit_spherical_γ, fit_γ
 
 # embeddings.jl
 export TimeDelayEmbedding

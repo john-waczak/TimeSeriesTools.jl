@@ -1,7 +1,8 @@
 using Statistics
 using StatsBase
 using LinearAlgebra
-using Optim
+#using Optim
+using LeastSquaresOptim
 using ParameterHandling
 
 # relevant links
@@ -53,13 +54,27 @@ function semivariogram(Z::TimeSeriesTools.AbstractRegularTimeSeries; lag_ratio=0
 end
 
 
+"""
+    get_reasonable_params(γ,h)
+
+Given an empirical semivariogram `γ` with time lags `h`, return reasonable default parameters for fitting a variogram model using the ParameterHandling format with positive constraints. Nugget is defaulted to 0.01 of maximum γ, partialsill is set to 85% of max γ value, and range is set to 10% of maximum lag.
+"""
+function get_reasonable_params(γ,h)
+    return (
+        nugget = positive(0.05*maximum(γ)),
+        partialsill = positive(0.9*maximum(γ)),
+        range = positive(0.15*maximum(h))
+    )
+end
+
+
 
 
 abstract type ModelVariogram end
 
 struct SphericalVariogram{T} <: ModelVariogram
     b::T  # nugget
-    C₀::T  # sill
+    C₀::T  # partialsill
     r::T  # range
 end
 
@@ -72,53 +87,50 @@ function (γ::SphericalVariogram)(h)
 end
 
 
-nugget(γ::SphericalVariogram) = γ.b
-sill(γ::SphericalVariogram) = γ.C₀
-γ_range(γ::SphericalVariogram) = γ.r
+struct ExponentialVariogram{T} <: ModelVariogram
+    b::T   # nugget
+    C₀::T  # sill
+    r::T   # range
+end
+
+function (γ::ExponentialVariogram)(h)
+    return b + C₀*(1-exp(-h/r))
+end
 
 
-"""
-    fit_spherical_γ(h, γ, params; optargs...)
+nugget(γ::ModelVariogram) = γ.b
+sill(γ::ModelVariogram) = γ.C₀ + γ.b
+partialsill(γ::ModelVariogram) = γ.C₀
+γ_range(γ::ModelVariogram) = γ.r
 
-Given an empirical semi-variogram γ with lags h, fit a spherical variogram model to the data with parameters `params`. The arguments `optargs` are passed to the `optimize` function.
-"""
-function fit_spherical_γ(h, γ, params; optargs...)
+
+
+
+
+function fit_γ(h, γ, params)
     θ₀, unflatten = ParameterHandling.value_flatten(params)
 
-    function loss(θ)
+    function loss!(out, θ)
         ps = unflatten(θ)
-        γ̂ = SphericalVariogram(ps.nugget, ps.sill, ps.range).(h)
-        return sqrt(mean((γ .- γ̂).^2))
+        γ̂ = SphericalVariogram(ps.nugget, ps.partialsill, ps.range)
+        out[1] = sum(x->x^2, γ̂.(h) .- γ)
     end
 
-    opt = optimize(loss, θ₀; optargs...)
+    prob = LeastSquaresProblem(x = θ₀, f! = loss!, output_length = 3, autodiff = :central)
+    optimize!(prob, LevenbergMarquardt(LeastSquaresOptim.QR()))
 
-    ps_fitted = unflatten(opt.minimizer)
+    ps_fitted = unflatten(θ₀)
 
-    return SphericalVariogram(ps_fitted.nugget, ps_fitted.sill, ps_fitted.range)
+    return SphericalVariogram(ps_fitted.nugget, ps_fitted.partialsill, ps_fitted.range)
+end
+
+
+function fit_γ(h, γ)
+    params = get_reasonable_params(γ, h)
+    return fit_γ(h, γ, params)
 end
 
 
 
 
 
-
-
-
-# this one will be much harder!
-# function semivariogram(Z::AbstractGenericTimeSeries; min_window_points=10)
-#     return 0
-# end
-
-# struct ModelledSemiVariogram{T <: Real}
-#     nugget::T,
-#     sill::T,
-#     range::T,
-#     method::Symbol,  #
-#     θ::Vector{T}
-# end
-
-
-
-# function semivariogram_fit(h, γ)
-# end
