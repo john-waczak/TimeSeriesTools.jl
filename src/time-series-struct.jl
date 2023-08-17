@@ -10,7 +10,7 @@ abstract type AbstractRegularTimeSeries <: AbstractTimeSeries end
 
 
 struct GenericTimeSeries{T<:Real, T2, UZ<:Unitful.Units, UT<:Unitful.Units} <: AbstractGenericTimeSeries
-    z::Vector{T}
+    z::AbstractVector{T}
     t::T2
     z_units::UZ
     t_units::UT
@@ -18,7 +18,7 @@ struct GenericTimeSeries{T<:Real, T2, UZ<:Unitful.Units, UT<:Unitful.Units} <: A
 end
 
 struct RegularTimeSeries{T<:Real, UZ<:Unitful.Units, UT<:Unitful.Units} <: AbstractRegularTimeSeries
-    z::Vector{T}
+    z::AbstractVector{T}
     Δt::T
     z_units::UZ
     t_units::UT

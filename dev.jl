@@ -21,8 +21,10 @@ include("makie-themes.jl")
 set_theme!(mints_theme)
 
 
-df_test = CSV.File(download("https://ncsa.osn.xsede.org/ees230012-bucket01/AirQualityNetwork/data/raw/Central_Hub_1/2023/03/04/MINTS_001e06318c91_IPS7100_2023_03_04.csv")) |> DataFrame
+df_test = CSV.read(download("https://ncsa.osn.xsede.org/ees230012-bucket01/AirQualityNetwork/data/raw/Central_Hub_1/2023/03/04/MINTS_001e06318c91_IPS7100_2023_03_04.csv"), DataFrame)
 
+
+typeof(df_test.pm0_1) <: AbstractVector{Float64}
 
 Z = RegularTimeSeries(
     df_test.pm2_5,
