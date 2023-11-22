@@ -289,6 +289,11 @@ function fit_γ(h, γ; method=:spherical)
     end
 
     optf = OptimizationFunction(loss, Optimization.AutoForwardDiff())
+
+    println("u0: $(u0)")
+    println("lb: $([0.0, minimum(γ), minimum(h)])")
+    println("ub: $([maximum(γ), maximum(γ), maximum(h)])")
+
     prob = OptimizationProblem(optf, u0, nothing, lb = [0.0, minimum(γ), minimum(h)], ub = [maximum(γ), maximum(γ), maximum(h)])
 
     sol = solve(prob, BFGS())
