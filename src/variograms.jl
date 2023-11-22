@@ -117,7 +117,7 @@ function get_reasonable_params(γ,h)
     # )
     γ_min, γ_max = extrema(γ)
     Δγ = γ_max - γ_min
-    return [γ_min + 0.1*Δ, γ_min + 0.75*Δγ, 0.10*maximum(h)]
+    return [γ_min + 0.1*Δγ, γ_min + 0.75*Δγ, 0.10*maximum(h)]
 end
 
 
