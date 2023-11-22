@@ -1,9 +1,15 @@
 using Statistics
 using StatsBase
 using LinearAlgebra
-#using Optim
-using LeastSquaresOptim
-using ParameterHandling
+#using LeastSquaresOptim
+#using ParameterHandling
+using Optimization
+using OptimizationOptimJL
+
+
+
+# https://github.com/gokulbalagopal/Temporal-Variograms/blob/master/firmware/non_linear_fit.jl#L45
+
 
 # relevant links
 # https://www.geo.fu-berlin.de/en/v/soga/Geodata-analysis/geostatistics/Geostatistical-Interpolation/Estimation-of-the-Semivariogram/index.html
@@ -60,17 +66,20 @@ function semivariogram(Z::TimeSeriesTools.AbstractRegularTimeSeries; lag_ratio=0
 end
 
 
+
+
 """
     get_reasonable_params(γ,h)
 
 Given an empirical semivariogram `γ` with time lags `h`, return reasonable default parameters for fitting a variogram model using the ParameterHandling format with positive constraints. Nugget is defaulted to 0.01 of maximum γ, partialsill is set to 85% of max γ value, and range is set to 10% of maximum lag.
 """
 function get_reasonable_params(γ,h)
-    return (
-        nugget = positive(0.05*maximum(γ)),
-        partialsill = positive(0.9*maximum(γ)),
-        range = positive(0.15*maximum(h))
-    )
+    # return (
+    #     nugget = positive(0.05*maximum(γ)),
+    #     partialsill = positive(0.9*maximum(γ)),
+    #     range = positive(0.15*maximum(h))
+    # )
+    return [0.1*maximum(γ), 0.75*maximum(γ), 0.10*maximum(h)]
 end
 
 
@@ -199,45 +208,53 @@ partialsill(γ::ModelVariogram) = γ.C₀
 
 
 
+method_lookup = Dict(
+    :spherical => SphericalVariogram,
+    :exponential => ExponentialVariogram,
+    :gaussian => GaussianVariogram,
+    :circular => CircularVariogram,
+    :cubic => CubicVariogram,
+    :linear => LinearVariogram,
+    :pentaspherical => PentasphericalVariogram,
+    :sinehole => SineHoleVariogram
+)
 
 
-function fit_γ(h, γ, params; method=:spherical)
-    θ₀, unflatten = ParameterHandling.value_flatten(params)
 
-    method_lookup = Dict(
-        :spherical => SphericalVariogram,
-        :exponential => ExponentialVariogram,
-        :gaussian => GaussianVariogram,
-        :circular => CircularVariogram,
-        :cubic => CubicVariogram,
-        :linear => LinearVariogram,
-        :pentaspherical => PentasphericalVariogram,
-        :sinehole => SineHoleVariogram
-    )
+function fit_γ(h, γ, u0; method=:spherical)
 
     f = method_lookup[method]
 
-    function loss!(out, θ)
-        ps = unflatten(θ)
-        γ̂ = f(ps.nugget, ps.partialsill, ps.range)
-        out[1] = sum(x->x^2, γ̂.(h) .- γ)
+    function loss(u, p)
+        γ̂ = f(u[1], u[2], u[3])
+        return sum(x->x^2, γ̂.(h) .- γ)
     end
 
-    prob = LeastSquaresProblem(x = θ₀, f! = loss!, output_length = 3, autodiff = :central)
-    optimize!(prob, LevenbergMarquardt(LeastSquaresOptim.QR()))
+    optf = OptimizationFunction(loss, Optimization.AutoForwardDiff())
+    prob = OptimizationProblem(optf, u0, nothing, lb = [0.0, minimum(γ), minimum(h)], ub = [maximum(γ), maximum(γ), maximum(h)])
 
-    ps_fitted = unflatten(θ₀)
+    sol = solve(prob, BFGS())
 
-    return f(ps_fitted.nugget, ps_fitted.partialsill, ps_fitted.range)
+    return f(sol[1], sol[2], sol[3])
 end
+
 
 
 function fit_γ(h, γ; method=:spherical)
-    params = get_reasonable_params(γ, h)
-    return fit_γ(h, γ, params; method=method)
+
+    u0 = get_reasonable_params(γ,h)
+    f = method_lookup[method]
+
+    function loss(u, p)
+        γ̂ = f(u[1], u[2], u[3])
+        return sum(x->x^2, γ̂.(h) .- γ)
+    end
+
+    optf = OptimizationFunction(loss, Optimization.AutoForwardDiff())
+    prob = OptimizationProblem(optf, u0, nothing, lb = [0.0, minimum(γ), minimum(h)], ub = [maximum(γ), maximum(γ), maximum(h)])
+
+    sol = solve(prob, BFGS())
+
+    return f(sol[1], sol[2], sol[3])
 end
-
-
-
-
 

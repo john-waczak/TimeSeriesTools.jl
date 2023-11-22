@@ -11,7 +11,7 @@ using Unitful
 using Dates, TimeZones
 
 # using Optim,ParameterHandling
-using LeastSquaresOptim,ParameterHandling
+# using LeastSquaresOptim,ParameterHandling
 
 
 
@@ -33,7 +33,6 @@ Z = RegularTimeSeries(
     u"s",
     ZonedDateTime(2023, 5, 2, 0, 0, 0, 154, tz"UTC")
 )
-
 Z2 = RegularTimeSeries(
     df_test.pm10_0,
     1.0,
@@ -97,13 +96,11 @@ save("./demo_γ.pdf", f)
 #  perform fit on γ
 #------------------------
 
-γ_params = get_reasonable_params(γ,h)
-
-θ₀, unflatten = ParameterHandling.value_flatten(γ_params)
-θ = unflatten(θ₀)
-γ̂ = SphericalVariogram(θ...)
 
 idx_fit = (h ./ 60.0) .≤ 10.0
+@benchmark γ_fit_spherical = fit_γ(h[idx_fit], γ[idx_fit]; method=:spherical)
+
+
 γ_fit_spherical = fit_γ(h[idx_fit], γ[idx_fit]; method=:spherical)
 γ_fit_exponential = fit_γ(h[idx_fit], γ[idx_fit]; method=:exponential)
 γ_fit_gaussian = fit_γ(h[idx_fit], γ[idx_fit]; method=:gaussian)
@@ -115,7 +112,8 @@ idx_fit = (h ./ 60.0) .≤ 10.0
 
 
 
-fig = Figure()
+
+fig = Figure();
 ax = Axis(
     fig[1,1],
     xlabel = "Δt (minutes)",
