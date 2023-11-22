@@ -115,7 +115,9 @@ function get_reasonable_params(γ,h)
     #     partialsill = positive(0.9*maximum(γ)),
     #     range = positive(0.15*maximum(h))
     # )
-    return [0.1*maximum(γ), 0.75*maximum(γ), 0.10*maximum(h)]
+    γ_min, γ_max = extrema(γ)
+    Δγ = γ_max - γ_min
+    return [γ_min + 0.1*Δ, γ_min + 0.75*Δγ, 0.10*maximum(h)]
 end
 
 
